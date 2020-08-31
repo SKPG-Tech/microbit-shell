@@ -212,7 +212,9 @@ serial.onDataReceived(serial.delimiters(Delimiters.SemiColon), function () {
                     "\r\nexit - go back the the home shell program" +
                     "\r\nscan - checks which radio groups send data (currently)" + 
                     "\r\nset-group - [groupNumber] - sets the radio group number - ex: 'set-group 5;'" +
-                    "\r\n")
+                    "\r\nsend-value - [name], [value] - sends a name with a value to the set group - ex: 'send-value hello 123;' - limits: name has to be no more than 8 letters" +
+                    "\r\nsend-string - [message] - sends a message (string) to the set group - ex: 'send-string Hi my name is " + control.deviceName() + "';" + 
+                    "\r\nsend-number - [number] - sends a number to the set group - ex: 'send-number 1234567890;'")
                     break
                 case "exit":
                     env = "home"
