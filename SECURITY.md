@@ -2,8 +2,7 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with bug fixes.
+Which versions of our project arecurrently being supported with bug fixes.
 
 |     Version     |     Supported      |
 | --------------- | ------------------ |
