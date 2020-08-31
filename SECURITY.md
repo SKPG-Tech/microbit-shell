@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Which versions of our project arecurrently being supported with bug fixes.
+Which versions of our project are currently being supported with bug fixes.
 
 |     Version     |     Supported      |
 | --------------- | ------------------ |
