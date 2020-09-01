@@ -219,7 +219,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.SemiColon), function () {
                     pause(2000)
                     for (let i: number = 0; i <= 255; i++) {
                         if(input.buttonIsPressed(Button.AB)) {
-                            getdata = false
+                            i = 254
                         } else {
                             radio.setGroup(i)
                             getdata = true
@@ -229,7 +229,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.SemiColon), function () {
                                 gotdata = false
                                 list.push(i)
                                 serial.writeLine("Got Data On Group " + i + ":" + 
-                                " Data in packets: String = " + receivedString2 + 
+                                " String = " + receivedString2 + 
                                 " Number = " + receivedNumber2)
                             } else {
                                 serial.writeLine("Tested Group: " + i + " No Data")
@@ -247,9 +247,9 @@ serial.onDataReceived(serial.delimiters(Delimiters.SemiColon), function () {
                     break
                 case "receive":
                     getdata = true
+                    alive = true
                     serial.writeString("\r\n\r\nReceiving data on group " + radiogroup +
                     "\r\n\r\n")
-                    getdata = true
                     while (alive) {
                         pause(100)
                         if(input.buttonIsPressed(Button.AB)) {
