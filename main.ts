@@ -8,6 +8,7 @@ let radiogroup = 0
 let receivedNumber2 = 0
 let list = [1]
 let num = false
+let alive = true
 let getdata = false
 let gotdata = false
 let wasoverheat = false
@@ -68,15 +69,6 @@ radio.onReceivedString(function (receivedString: string) {
 
     }
 })
-radio.onReceivedValue(function (name: string, value: number) {
-    if (getdata) {
-        gotdata = true
-        name2 = name
-        value2 = value
-    } else {
-
-    }
-})
 radio.onReceivedNumber(function (receivedNumber: number) {
     if (getdata) {
         gotdata = true
@@ -105,7 +97,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.SemiColon), function () {
                     break
                 case "info":
                     serial.writeString("\r\n" + 
-                    "\r\nShell Version: v1.0.0-alpha.4" + 
+                    "\r\nShell Version: v1.0.0-alpha.5" + 
                     "\r\nRadio Group: " + radiogroup +
                     "\r\nDevice Name: " + control.deviceName() + 
                     "\r\nDevice Serial Number: " + control.deviceSerialNumber() + 
@@ -212,41 +204,63 @@ serial.onDataReceived(serial.delimiters(Delimiters.SemiColon), function () {
                     "\r\nexit - go back the the home shell program" +
                     "\r\nscan - checks which radio groups send data (currently)" + 
                     "\r\nset-group - [groupNumber] - sets the radio group number - ex: 'set-group 5;'" +
-                    "\r\nsend-value - [name], [value] - sends a name with a value to the set group - ex: 'send-value hello 123;' - limits: name has to be no more than 8 letters" +
-                    "\r\nsend-string - [message] - sends a message (string) to the set group - ex: 'send-string Hi my name is " + control.deviceName() + "';" + 
-                    "\r\nsend-number - [number] - sends a number to the set group - ex: 'send-number 1234567890;'")
+                    "\r\nsend-string - [message] - sends a message (string) to the set group - ex: 'send-string Hi my name is " + control.deviceName() + ";'" + 
+                    "\r\nsend-number - [number] - sends a number to the set group - ex: 'send-number 1234567890;'" + 
+                    "\r\nreceive - receives data until you cancel the command")
                     break
                 case "exit":
                     env = "home"
                     break
                 case "scan":
-                    serial.writeLine("\r\nStarting radio group checking...")
+                    serial.writeLine("\r\n\r\nStarting radio group checking...")
                     pause(3000)
-                    serial.writeString("This test will go through groups 0 - 255")
-                    serial.writeLine("\r\nThis test will take 10-15 minutes (some types of data could be empty)")
+                    serial.writeString("\r\nThis test will go through groups 0 - 255")
+                    serial.writeLine("\r\nThis test will take 10-15 minutes (some types of data could be empty)\r\n")
                     pause(2000)
                     for (let i: number = 0; i <= 255; i++) {
-                        radio.setGroup(i)
-                        getdata = true
-                        pause(3000)
-                        if (gotdata) {
+                        if(input.buttonIsPressed(Button.AB)) {
                             getdata = false
-                            gotdata = false
-                            list.push(i)
-                            serial.writeLine("Got Data On Group: " + i + 
-                            " Data in packets: String=" + receivedString2 + 
-                            " Number=" + receivedNumber2 + " Variable.Name=" + name2 + " Variable.Value=" + value2)
                         } else {
-                            serial.writeLine("Tested Group: " + i + " No Data")
+                            radio.setGroup(i)
+                            getdata = true
+                            pause(3000)
+                            if (gotdata) {
+                                getdata = false
+                                gotdata = false
+                                list.push(i)
+                                serial.writeLine("Got Data On Group " + i + ":" + 
+                                " Data in packets: String = " + receivedString2 + 
+                                " Number = " + receivedNumber2)
+                            } else {
+                                serial.writeLine("Tested Group: " + i + " No Data")
+                            }
+                            receivedString2 = ""
+                            receivedNumber2 = 0
+                            name2 = ""
+                            value2 = 0
+                        }
+                    }
+                    serial.writeString("All groups that sent data: ")
+                    for (let i: number = 1; i < list.length; i++) {
+                        serial.writeString(list.get(i).toString() + ", ")
+                    }
+                    break
+                case "receive":
+                    getdata = true
+                    serial.writeString("\r\n\r\nReceiving data on group " + radiogroup +
+                    "\r\n\r\n")
+                    getdata = true
+                    while (alive) {
+                        pause(100)
+                        if(input.buttonIsPressed(Button.AB)) {
+                            getdata = false
+                            alive = false
+                        } else if (gotdata) {
+                            gotdata = false
+                            serial.writeLine("Got Data: String = " + receivedString2 + " Number = " + receivedNumber2)
                         }
                         receivedString2 = ""
                         receivedNumber2 = 0
-                        name2 = ""
-                        value2 = 0
-                    }
-                    serial.writeString("All groups that sent data: ")
-                    for (let i: number = 1; i < list.length + 1; i++) {
-                        serial.writeString(list.get(i).toString() + ", ")
                     }
                     break
                 default:
@@ -257,6 +271,13 @@ serial.onDataReceived(serial.delimiters(Delimiters.SemiColon), function () {
                         radio.setGroup(gstring)
                         radiogroup = gstring
                         serial.writeString("\r\n\nThe radio group number was set to " + gstring)
+                    } else if (command.includes("send-string ")) {
+                        let messge: string = nocase.slice(12)
+                        radio.sendString(messge)
+                    } else if (command.includes("send-number ")) {
+                        let stringws: string = nocase.slice(12)
+                        let messge: number = parseInt(stringws)
+                        radio.sendNumber(messge)
                     } else {
                         serial.writeString("\r\n\r\nError: command '" + command + "' not found!")
                     }
