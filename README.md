@@ -1,6 +1,6 @@
 ![Build status badge](https://github.com/skpg-tech/microbit-shell/workflows/MakeCode/badge.svg)
 # What is this?
-**microbit-shell** is a shell that runs on a __micro:bit__. We know sounds _**crazy**_ to do such things on a micro:bit. This project is here to show what a *simple* and *small* device can do and that it is for anybody who wants to get started coding. The shell is about **200** lines of code. The shell is suffering from a few issues due to the `limits` being almost reached. _This project was made in the Makecode editor using Javascript / TypeScript_.
+**microbit-shell** is a shell that runs on a __micro:bit__. We know sounds _**crazy**_ to do such things on a micro:bit. This project is here to show what a *simple* and *small* device can do and that it is for anybody who wants to get started coding. The shell is about **300** lines of code. The shell is suffering from a few issues due to the `limits` being almost reached. _This project was made in the Makecode editor using Javascript / TypeScript_.
 
 ## How to use this project
 **This project _only supports PuTTY_. Use of other serial clients may give different results, in the case of that make an "Issue"**.
