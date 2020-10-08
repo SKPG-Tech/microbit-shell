@@ -42,4 +42,4 @@ To edit this repository in MakeCode.
       - it may ask you to log in to your GitHub account
       - select this repo from the list
       
-## SKPG-Tech/microbit-shell is licensed under the MIT License
+## SKPG-Tech/microbit-shell is licensed under the ISC License
