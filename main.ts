@@ -93,7 +93,9 @@ serial.onDataReceived(serial.delimiters(Delimiters.SemiColon), function () {
                     "\r\nreset - restarts the device" + 
                     "\r\necho - [message] - repeats your message - ex: 'echo Hello World!;'" + 
                     "\r\npins - goes to the pin program, where you can read and write analog and digital values to the pins" +
-                    "\r\nradio - goes to the radio program, where you can use the radio functions")
+                    "\r\nradio - goes to the radio program, where you can use the radio functions" + 
+                    "\r\n\r\nList of keybinds (on the micro:bit):" + 
+                    "\r\nA + B (hold) - cancels a running command")
                     break
                 case "info":
                     serial.writeString("\r\n" + 
