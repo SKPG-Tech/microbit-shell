@@ -25,7 +25,7 @@
 
 #### DONE, Enjoy the project.
 
-Press ';' to run the command. (Enter doesn't work)
+~~Press ';' to run the command. (Enter doesn't work)~~ Enter works now! Navigation keys are not functional yet.
 
 ## How to import this project
 
