@@ -3,7 +3,8 @@ enum ShellEnvironment {
     RADIO,
     PINS,
     LEDS,
-    SOUND
+    SOUND,
+    TURTLE
 }
 
 let letter: string = ""
@@ -17,7 +18,13 @@ let receivedNumber2 = 0
 let alive = true
 let getdata = false
 let gotdata = false
+let currentBrighness = 127
+let currentSpeed = 250
 
+const commandHistory: string[] = [""]
+let commandPtr: number = 0
+
+basic.clearScreen()
 radio.setGroup(radiogroup)
 serial.redirectToUSB()
 serial.setBaudRate(BaudRate.BaudRate115200)
@@ -35,13 +42,21 @@ basic.forever(() => {
             break
         // UP key
         case "\x1B[A":
-            serial.writeString("UP")
-            letter = ""
+            if (commandPtr < commandHistory.length - 1) commandPtr++
+
+            letter = commandHistory[commandPtr]
+            command = command + letter
+            serial.writeString(commandPtr.toString())
+            serial.writeString(letter)
             break
         // DOWN key
         case "\x1B[B":
-            serial.writeString("DOWN")
-            letter = ""
+            if (commandPtr > 0) commandPtr--
+
+            letter = commandHistory[commandPtr]
+            command = command + letter
+            serial.writeString(commandPtr.toString())
+            serial.writeString(letter)
             break
         // RIGHT key
         case "\x1B[C":
@@ -85,6 +100,9 @@ function new_command() {
         case ShellEnvironment.SOUND:
             serial.writeString(`\r\n\r\n[${control.deviceName()}/sound] -> `)
             break
+        case ShellEnvironment.TURTLE:
+            serial.writeString(`\r\n\r\n? `)
+            break
     }
 }
 radio.onReceivedString((receivedString: string) => {
@@ -107,6 +125,8 @@ radio.onReceivedNumber((receivedNumber: number) => {
 serial.onDataReceived(serial.delimiters(Delimiters.CarriageReturn), () => {
     pause(100)
     let nocase = command
+    if (nocase.length > 0) commandHistory.unshift(nocase)
+    commandPtr = 0
     command = command.toLowerCase()
     switch (env) {
         case ShellEnvironment.HOME:
@@ -120,6 +140,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.CarriageReturn), () => {
                         "\r\necho - [message] - repeats your message - ex: 'echo Hello World!;'" +
                         "\r\necho-screen - [message] - repeats your message in the micro:bit screen - ex: 'echo-screen Hello World!;'" +
                         "\r\npins - goes to the pin program, where you can read and write analog and digital values to the pins" +
+                        "\r\nturtle - turtle env" +
                         "\r\nradio - goes to the radio program, where you can use the radio functions" +
                         "\r\n\r\nList of keybinds (on the micro:bit):" +
                         "\r\nA + B (hold) - cancels a running command")
@@ -142,6 +163,13 @@ serial.onDataReceived(serial.delimiters(Delimiters.CarriageReturn), () => {
                     break
                 case "pins":
                     env = ShellEnvironment.PINS
+                    break
+                case "leds":
+                    env = ShellEnvironment.LEDS
+                    break
+                case "turtle":
+                    env = ShellEnvironment.TURTLE
+                    turtle.home()
                     break
                 case "":
                     serial.writeString("")
@@ -250,6 +278,97 @@ serial.onDataReceived(serial.delimiters(Delimiters.CarriageReturn), () => {
         case ShellEnvironment.LEDS:
             break
         case ShellEnvironment.SOUND:
+            break
+        case ShellEnvironment.TURTLE:
+            switch (command) {
+                case "rt":
+                    turtle.turnRight()
+                    serial.writeString("\r\nOK")
+                    break
+                case "lt":
+                    turtle.turnLeft()
+                    serial.writeString("\r\nOK")
+                    break
+                case "home":
+                    turtle.home()
+                    serial.writeString("\r\nOK")
+                    break
+                case "exit":
+                    env = ShellEnvironment.HOME
+                    basic.clearScreen()
+                    break
+                case "pd":
+                    turtle.pen(TurtlePenMode.Down)
+                    serial.writeString("\r\nOK")
+                    break
+                case "pu":
+                    turtle.pen(TurtlePenMode.Up)
+                    serial.writeString("\r\nOK")
+                    break
+                case "help":
+                    /*serial.writeString(
+                        "\r\nfd [INT] - move forward" +
+                        "\r\nbk [INT] - move backward" +
+                        "\r\nspeed [INT] - change turtle's speed" +
+                        "\r\nbright [INT] - change brightness" +
+                        "\r\npos [X] [Y] - set position of the turtle" +
+                        "\r\nhelp - show help" +
+                        "\r\nrt - turn right" +
+                        "\r\nlt - turn left" +
+                        "\r\nexit - exit turtle env" +
+                        "\r\npd - pen down" +
+                        "\r\npu - pen up"
+                    )*/
+                    serial.writeString("\r\nfd, bk, speed, bright, pos, help, rt, lt, exit, pd, pu, cs")
+                    break
+                case "cs":
+                    turtle.home()
+                    for (let i = 0; i < 5; i++) {
+                        turtle.setPosition(i, 4)
+                        turtle.pen(TurtlePenMode.Down)
+                        turtle.setBrightness(0)
+                        turtle.forward(5)
+                    }
+                    turtle.setBrightness(currentBrighness)
+                    turtle.home()
+                    break
+                default:
+                    if (command.includes("fd ")) {
+                        let args_raw: string = nocase.slice(3)
+                        let args: number = parseInt(args_raw)
+                        turtle.forward(args)
+                        serial.writeString("\r\nOK")
+                    } else if (command.includes("bk ")) {
+                        let args_raw: string = nocase.slice(3)
+                        let args: number = parseInt(args_raw)
+                        turtle.back(args)
+                        serial.writeString("\r\nOK")
+                    } else if (command.includes("bright ")) {
+                        let args_raw: string = nocase.slice(7)
+                        let args: number = parseInt(args_raw)
+                        currentBrighness = args
+                        turtle.setBrightness(args)
+                        serial.writeString("\r\nOK")
+                    } else if (command.includes("speed ")) {
+                        let args_raw: string = nocase.slice(6)
+                        let args: number = parseInt(args_raw)
+                        turtle.setSpeed(args)
+                    } else if (command.includes("pos ")) {
+                        let args_raw: string[] = nocase.slice(4).split(" ")
+                        let x: number = parseInt(args_raw[0])
+                        let y: number = parseInt(args_raw[1])
+                        turtle.setPosition(x, y)
+                        serial.writeString("\r\nOK")
+                    } else if (command.includes("bk ")) {
+                        let args_raw: string = nocase.slice(3)
+                        let args: number = parseInt(args_raw)
+                        turtle.back(args)
+                        serial.writeString("\r\nOK")
+                    } else {
+                        serial.writeString("\r\nUNKNOWN COMMAND")
+                    }
+                    break
+            }
             break
     }
     command = ""
